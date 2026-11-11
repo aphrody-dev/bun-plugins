@@ -1,5 +1,5 @@
 {
-  "name": "@sovereign/bun-plugins",
+  "name": "@aphrody/bun-plugins",
   "version": "1.0.0",
   "description": "Sovereign Bun Plugins: Just Recipes, Turbo Blake3 Cache, and VCS Metadata",
   "type": "module",
