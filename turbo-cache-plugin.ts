@@ -2,7 +2,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-function hashBlake3Fast(content: string | Buffer): string {
+function hashBlake3Fast(content: string | Uint8Array): string {
   const hasher = new Bun.CryptoHasher("blake2s256");
   hasher.update(typeof content === "string" ? Buffer.from(content) : content);
   return hasher.digest("hex");
