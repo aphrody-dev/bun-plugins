@@ -40,7 +40,11 @@ export class TurboCache {
   /**
    * Computes deterministic Blake3 hash of command, input files, and environment keys.
    */
-  computeHash(command: string, inputFiles: string[] = [], envKeys: string[] = []): string {
+  computeHash(
+    command: string,
+    inputFiles: string[] = [],
+    envKeys: string[] = [],
+  ): string {
     const parts: string[] = [`cmd:${command}`];
 
     for (const key of envKeys.sort()) {
@@ -70,7 +74,7 @@ export class TurboCache {
   async run<T>(
     key: string,
     inputs: { files?: string[]; env?: string[] } = {},
-    fn: () => Promise<T> | T
+    fn: () => Promise<T> | T,
   ): Promise<CachedRun<T>> {
     const hash = this.computeHash(key, inputs.files, inputs.env);
     const diskPath = join(this.cacheDir, `${hash}.json`);
@@ -91,7 +95,10 @@ export class TurboCache {
       try {
         const raw = readFileSync(diskPath, "utf-8");
         const parsed = JSON.parse(raw);
-        this.memoryCache.set(hash, { data: parsed.data, timestamp: parsed.timestamp });
+        this.memoryCache.set(hash, {
+          data: parsed.data,
+          timestamp: parsed.timestamp,
+        });
         this.hits++;
         return {
           cached: true,
@@ -137,7 +144,10 @@ export class TurboCache {
     return {
       hits: this.hits,
       misses: this.misses,
-      hitRate: this.hits + this.misses > 0 ? (this.hits / (this.hits + this.misses)) * 100 : 0,
+      hitRate:
+        this.hits + this.misses > 0
+          ? (this.hits / (this.hits + this.misses)) * 100
+          : 0,
       cacheDir: this.cacheDir,
     };
   }

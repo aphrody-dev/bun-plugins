@@ -4,3 +4,4 @@ export * from "./turbo-cache-plugin.ts";
 export * from "./vcs-meta-plugin.ts";
 export * from "./decide-plugin.ts";
 export * from "./lua-plugin.ts";
+export * from "./m3-icons-plugin.ts";

@@ -226,7 +226,12 @@ function hashTextFeatures(text: string, dim = 512): Float32Array {
 
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i]!;
-    add(`u:${t}`, t.startsWith("bun") || t.includes("sqlite") || t.includes("ffi") ? 3.0 : 1.2);
+    add(
+      `u:${t}`,
+      t.startsWith("bun") || t.includes("sqlite") || t.includes("ffi")
+        ? 3.0
+        : 1.2,
+    );
     if (i + 1 < tokens.length) add(`b:${t}_${tokens[i + 1]}`, 1.6);
     if (t.length >= 4) {
       for (let k = 0; k + 4 <= Math.min(t.length, 16); k += 2) {
@@ -328,7 +333,10 @@ export function decideNative(
       for (const [k, spec] of Object.entries(props)) {
         if (k in inlineArgs) continue;
         const m = trimmed.match(
-          new RegExp(`\\b${k}\\s*[:=]\\s*(?:"([^"]+)"|'([^']+)'|([^\\s,;]+))`, "i"),
+          new RegExp(
+            `\\b${k}\\s*[:=]\\s*(?:"([^"]+)"|'([^']+)'|([^\\s,;]+))`,
+            "i",
+          ),
         );
         const rawV = m?.[1] ?? m?.[2] ?? m?.[3];
         if (rawV !== undefined) {
@@ -342,7 +350,8 @@ export function decideNative(
       }
 
       const missing = (bestTool.parameters?.required ?? []).filter(
-        (reqKey) => inlineArgs[reqKey] === undefined || inlineArgs[reqKey] === "",
+        (reqKey) =>
+          inlineArgs[reqKey] === undefined || inlineArgs[reqKey] === "",
       );
       if (missing.length > 0) {
         return {
@@ -429,7 +438,8 @@ export function decideNative(
         let acc = 0;
         const base = r * rowBytes;
         for (let i = 0; i < model.meta.featureDim; i++) {
-          const crumb = (model.packed[base + (i >> 2)]! >> ((i & 3) * 2)) & 0b11;
+          const crumb =
+            (model.packed[base + (i >> 2)]! >> ((i & 3) * 2)) & 0b11;
           if (crumb === 1) acc += x[i]!;
           else if (crumb === 2) acc -= x[i]!;
         }
@@ -465,7 +475,10 @@ export function decideNative(
         summary: chosen.summary,
         ...(replacedLegacyPkg ? { migratesFrom: replacedLegacyPkg } : {}),
       },
-      confidence: Math.min(0.99, Math.round((0.68 + Math.tanh(bestScore) * 0.3) * 1000) / 1000),
+      confidence: Math.min(
+        0.99,
+        Math.round((0.68 + Math.tanh(bestScore) * 0.3) * 1000) / 1000,
+      ),
       latencyMs: Math.round((performance.now() - t0) * 1000) / 1000,
       engine: ffi ? "bitnet-b1.58-avx2-ffi" : "bitnet-b1.58-js",
       zeroGpu: true,
@@ -598,9 +611,14 @@ function installGlobalDecideHooks(): void {
   }
 }
 
-export function generateDecideModule(filePath: string, content: string): string {
+export function generateDecideModule(
+  filePath: string,
+  content: string,
+): string {
   const isToml = filePath.toLowerCase().endsWith(".toml");
-  const spec = (isToml ? Bun.TOML.parse(content) : JSON.parse(content)) as DecidePolicySpec;
+  const spec = (
+    isToml ? Bun.TOML.parse(content) : JSON.parse(content)
+  ) as DecidePolicySpec;
   const normalizedPath = filePath.replace(/\\/g, "/");
   return `
 const hooks = globalThis[Symbol.for("sovereign.bun.decide.plugin")];
@@ -635,13 +653,16 @@ export default hooks;
 `,
     }));
 
-    build.onLoad({ filter: /\.decide\.(json|toml)$/i }, (args: { path: string }) => {
-      const content = readFileSync(args.path, "utf8");
-      return {
-        loader: "js",
-        contents: generateDecideModule(args.path, content),
-      };
-    });
+    build.onLoad(
+      { filter: /\.decide\.(json|toml)$/i },
+      (args: { path: string }) => {
+        const content = readFileSync(args.path, "utf8");
+        return {
+          loader: "js",
+          contents: generateDecideModule(args.path, content),
+        };
+      },
+    );
   },
 };
 

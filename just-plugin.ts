@@ -19,7 +19,9 @@ export function parseJustfile(content: string): Record<string, RecipeMeta> {
     const trimmed = line.trim();
 
     if (trimmed.startsWith("#")) {
-      currentComment = currentComment ? `${currentComment} ${trimmed.slice(1).trim()}` : trimmed.slice(1).trim();
+      currentComment = currentComment
+        ? `${currentComment} ${trimmed.slice(1).trim()}`
+        : trimmed.slice(1).trim();
       continue;
     }
 
@@ -29,12 +31,20 @@ export function parseJustfile(content: string): Record<string, RecipeMeta> {
       const name = recipeMatch[1];
       const rawParams = (recipeMatch[2] || "").trim();
       const parameters = rawParams
-        ? rawParams.split(/\s+/).map((p) => p.split("=")[0].trim()).filter(Boolean)
+        ? rawParams
+            .split(/\s+/)
+            .map((p) => p.split("=")[0].trim())
+            .filter(Boolean)
         : [];
 
       const body: string[] = [];
       let j = i + 1;
-      while (j < lines.length && (lines[j].startsWith("  ") || lines[j].startsWith("\t") || lines[j].trim() === "")) {
+      while (
+        j < lines.length &&
+        (lines[j].startsWith("  ") ||
+          lines[j].startsWith("\t") ||
+          lines[j].trim() === "")
+      ) {
         if (lines[j].trim()) {
           body.push(lines[j].trim());
         }
@@ -57,7 +67,10 @@ export function parseJustfile(content: string): Record<string, RecipeMeta> {
   return recipes;
 }
 
-export function generateJustModule(justfilePath: string, content: string): string {
+export function generateJustModule(
+  justfilePath: string,
+  content: string,
+): string {
   const recipes = parseJustfile(content);
   const normalizedPath = justfilePath.replace(/\\/g, "/");
 
@@ -65,7 +78,10 @@ export function generateJustModule(justfilePath: string, content: string): strin
     .map(([name, meta]) => {
       const safeName = name.replace(/[^a-zA-Z0-9_$]/g, "_");
       const fnName = safeName === "default" ? "run_default" : safeName;
-      const exportStmt = safeName === "default" ? `export { run_default as default };` : `export { ${fnName} };`;
+      const exportStmt =
+        safeName === "default"
+          ? `export { run_default as default };`
+          : `export { ${fnName} };`;
 
       return `
 async function ${fnName}(args = {}) {
@@ -95,14 +111,17 @@ ${recipeExports}
 export const justPlugin = {
   name: "sovereign-just-plugin",
   setup(build: any) {
-    build.onLoad({ filter: /(\.just|justfile)$/i }, (args: { path: string }) => {
-      const content = readFileSync(args.path, "utf-8");
-      const code = generateJustModule(args.path, content);
-      return {
-        contents: code,
-        loader: "js",
-      };
-    });
+    build.onLoad(
+      { filter: /(\.just|justfile)$/i },
+      (args: { path: string }) => {
+        const content = readFileSync(args.path, "utf-8");
+        const code = generateJustModule(args.path, content);
+        return {
+          contents: code,
+          loader: "js",
+        };
+      },
+    );
   },
 };
 

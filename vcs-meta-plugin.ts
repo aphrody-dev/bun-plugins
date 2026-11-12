@@ -16,7 +16,12 @@ export interface VcsMetadata {
 
 function safeExec(cmd: string, cwd: string): string {
   try {
-    return execSync(cmd, { cwd, encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"], timeout: 3000 }).trim();
+    return execSync(cmd, {
+      cwd,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: 3000,
+    }).trim();
   } catch {
     return "";
   }
@@ -35,7 +40,8 @@ export function getVcsMetadata(cwd: string = process.cwd()): VcsMetadata {
 
   if (hasJj) {
     try {
-      const template = 'commit_id ++ "||" ++ change_id ++ "||" ++ author.name() ++ "||" ++ committer.timestamp()';
+      const template =
+        'commit_id ++ "||" ++ change_id ++ "||" ++ author.name() ++ "||" ++ committer.timestamp()';
       const out = safeExec(`jj log -r @ --no-graph -T '${template}'`, cwd);
       if (out) {
         const parts = out.split("||");
